@@ -1,16 +1,24 @@
 {
   "name": "cupomapi",
   "version": "1.0.0",
-  "description": "API for Cupom APP",
+  "description": "Cupom Server API",
+  "engines": {
+    "node": "4.4.5",
+    "npm": "2.15.5"
+  },
   "main": "index.js",
-  "keywords": [
-    "Cupom"
-  ],
-  "author": "Mateus Oliveira Carvalho",
-  "license": "ISC",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
-    "pg": "^6.1.0",
-  }
+    "pg": "^6.1.0"
+  },
+  "keywords": [
+    "Cupom",
+    "Server",
+    "API"
+  ],
+  "license": "ISC"
 }
