@@ -42,6 +42,8 @@ var _selectCupom = function(next){
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
 
+  _createTable(client);
+
   var query = client.query("SELECT * from cupoms");
 
   //Add Each Cupom
