@@ -24,8 +24,10 @@ var _createTable = function(client){
               + ");");
 }
 
+//Get the info of the Request
 var _requestInfo = function(req, client, next){
 
+    //PostgreSQL Query to Get the largest reuqest number
   var query = client.query("SELECT MAX(number) FROM requests");
 
   //Add Each Request
@@ -37,8 +39,10 @@ var _requestInfo = function(req, client, next){
   //Query End
   query.on("end", function (result) {
 
+    //Creates a number for the request
     var number = (result.rows[0].max || 0);
     number++;
+
     //Request Information
     var request = {
       number:   number,
@@ -51,7 +55,7 @@ var _requestInfo = function(req, client, next){
       url:      req.url,
       body:     JSON.stringify(req.body)
     };
-    //Execute after Query End
+    //Execute after Query End (Return a new Request to be Inserted)
     next(request);
   });
 }
@@ -69,12 +73,18 @@ var _insertRequest = function(req, next){
   //Filter Request Information
   _requestInfo(req, client, function(r){
 
-    //Insertion Query
+    //PostgreSQL Query to Create a new request
     client.query("INSERT INTO requests (number, date, ip, protocol, method, agent, host, url, body) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [r.number, r.date, r.ip, r.protocol, r.method, r.agent, r.host, r.url, r.body]).then(function(){
 
-      next(r);
+      //End Connection
+      client.end();
+
+      //Execute after Query Ends
+      next("Ok");
 
     }, function(err){
+
+      //Execute after Error
       next(err);
     });
 
@@ -87,6 +97,7 @@ var _selectRequest = function(next){
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
 
+  //PostgreSQL Query to get all requests
   var query = client.query("SELECT * from requests");
 
   //Add Each Request
@@ -97,9 +108,11 @@ var _selectRequest = function(next){
 
   //Query End
   query.on("end", function (result) {
+
+    //End Connection
     client.end();
 
-    //Execute after Query End
+    //Execute after Query End (Returning Requests)
     next(result.rows);
   });
 }
@@ -111,11 +124,17 @@ var _deleteRequest = function(request, next){
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
 
-  //Deletion Query
+  //PostgreSQL Query to delete a specific requests
   client.query("DELETE FROM requests WHERE number=$1",[request.number]).then(function(){
+
+    //End Connection
+    client.end();
+
+    //Execute after Query End
     next("Ok");
 
   }, function(err){
+    //Execute after Error
     next(err);
   });
 }
@@ -127,19 +146,22 @@ var _deleteAll = function(next){
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
 
-  //Drop Request Table
+  //PostgreSQL Query to Drop Request Table
   client.query("DROP TABLE requests").then(function(){
 
     //Creata Table Request
     _createTable(client);
 
+    //Execute after Query End
     next("Ok");
 
   }, function(err){
+    //Execute after Error
     next(err)
   });
 }
 
+//Functions to be Exported
 module.exports = {
   insertRequest: _insertRequest,
   selectRequest: _selectRequest,

@@ -1,7 +1,7 @@
 //Index File
 //Create Server API
 
-//Requiring Modules
+//Require Node Modules
 var express    = require('express');
 var bodyParser = require('body-parser');
 

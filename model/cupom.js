@@ -11,7 +11,7 @@ var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2
 //Create Cupom Table
 var _createTable = function(client){
   //Table Script
-  client.query("CREATE TABLE IF NOT EXISTS cupoms ("
+  client.query("CREATE TABLE IF NOT EXISTS cupons ("
                 + "coo   NUMERIC(6) PRIMARY KEY,"
                 + "data  VARCHAR(10),"
                 + "cnpj  VARCHAR(18),"
@@ -28,23 +28,32 @@ var _insertCupom = function(cupom, next){
   //Create Table if it does not exist
   _createTable(client);
 
-  //Insertion Query
-  client.query("INSERT INTO cupoms (coo, data, cnpj, valor) values ($1, $2, $3, $4)", [cupom.coo, cupom.data, cupom.cnpj, cupom.valor]).then(function(){
+  //PostgreSQL Query to Create a new cupom
+  client.query("INSERT INTO cupons (coo, data, cnpj, valor) values ($1, $2, $3, $4)", [cupom.coo, cupom.data, cupom.cnpj, cupom.valor]).then(function(){
+    //End Connection
+    client.end();
+
+    //Execute after Query Ends
     next("Ok");
+
   }, function(err){
+
+    //Execute after Error
     next(err);
   });
 }
 
-//Select ALL Cupons
+//Select ALL cupons
 var _selectCupom = function(next){
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
 
+  //Create Table if it does not exist
   _createTable(client);
 
-  var query = client.query("SELECT * from cupoms");
+  //PostgreSQL Query to Get a ll cupons
+  var query = client.query("SELECT * from cupons");
 
   //Add Each Cupom
   query.on("row", function (row, result) {
@@ -52,11 +61,12 @@ var _selectCupom = function(next){
     result.addRow(row);
   });
 
-    //Query End
+  //Query End
   query.on("end", function (result) {
+    //End Connection
     client.end();
 
-    //Execute after Query End
+    //Execute after Query Ends (Returning Cupons)
     next(result.rows);
   });
 }
@@ -68,15 +78,23 @@ var _deleteCupom = function(cupom, next){
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
 
-  //Deletion Query
-  client.query("DELETE FROM cupoms WHERE coo=$1",[cupom.coo]).then(function(){
+  //PostgreSQL Query to Delete a specific cupom
+  client.query("DELETE FROM cupons WHERE coo=$1",[cupom.coo]).then(function(){
+
+    //End Connection
+    client.end();
+
+    //Execute after Query Ends
     next("Ok");
 
   }, function(err){
+
+    //Execute after Error
     next(err);
   });
 }
 
+//Functions to be Exported
 module.exports = {
   insertCupom: _insertCupom,
   selectCupom: _selectCupom,
