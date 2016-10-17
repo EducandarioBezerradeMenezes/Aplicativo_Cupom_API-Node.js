@@ -1,7 +1,7 @@
 {
   "name": "cupomapi",
   "version": "1.0.0",
-  "description": "Cupom Server API",
+  "description": "API de cadastro de cupons",
   "engines": {
     "node": "4.4.5",
     "npm": "2.15.5"
@@ -15,9 +15,12 @@
     "express": "^4.14.0",
     "pg": "^6.1.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EducandarioBezerradeMenezes/Aplicativo_Cupom_API-Node.js.git"
+  },
   "keywords": [
     "Cupom",
-    "Server",
     "API"
   ],
   "license": "ISC"
