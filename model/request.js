@@ -27,7 +27,7 @@ var _createTable = function(client){
 //Get the info of the Request
 var _requestInfo = function(req, client, next){
 
-    //PostgreSQL Query to Get the largest reuqest number
+  //PostgreSQL Query to Get the largest reuqest number
   var query = client.query("SELECT MAX(number) FROM requests");
 
   //Add Each Request
