@@ -13,7 +13,7 @@ var _createTable = function(client){
   //Table Script
   client.query("CREATE TABLE IF NOT EXISTS cupons ("
                 + "coo   NUMERIC(6) PRIMARY KEY,"
-                + "data  VARCHAR(10),"
+                + "data  DATE,"
                 + "cnpj  VARCHAR(18),"
                 + "valor NUMERIC(11,2)"
               + ");");
@@ -94,9 +94,32 @@ var _deleteCupom = function(cupom, next){
   });
 }
 
+//Delete All Cupom
+var _deleteAll = function(next){
+
+  //Connection
+  var client = new pg.Client(process.env.DATABASE_URL || connectionString);
+  client.connect();
+
+  //PostgreSQL Query to Drop Cupom Table
+  client.query("DROP TABLE cupons").then(function(){
+
+    //Creata Table Cupom
+    _createTable(client);
+
+    //Execute after Query End
+    next("Ok");
+
+  }, function(err){
+    //Execute after Error
+    next(err)
+  });
+}
+
 //Functions to be Exported
 module.exports = {
   insertCupom: _insertCupom,
   selectCupom: _selectCupom,
   deleteCupom: _deleteCupom,
+  deleteAll:   _deleteAll
 }

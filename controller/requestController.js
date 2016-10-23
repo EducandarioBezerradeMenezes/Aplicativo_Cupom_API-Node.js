@@ -6,7 +6,7 @@ var express = require('express');
 
 //Require created Models
 var Request   = require('../model/request');
-
+var Cupom     = require('../model/cupom')
 //Creates Routes
 var router  = express.Router();
 
@@ -29,7 +29,9 @@ router.route('/delete')
 
     //Drop and creates a new Request Table
     Request.deleteAll(function(result){
-      res.json(result);
+      Cupom.deleteAll(function(result){
+        res.json(result);
+      });
     });
   });
 
