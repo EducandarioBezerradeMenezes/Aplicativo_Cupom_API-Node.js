@@ -1,4 +1,4 @@
-//Cupom Model
+//Chave Model
 //Comunication to Data Base
 
 //Requiring PG Module
@@ -8,21 +8,18 @@ var pg = require('pg');
 pg.defaults.ssl = true;
 var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
 
-//Create Cupom Table
+//Create Chave Table
 var _createTable = function(client){
 
   //Table Script
-  client.query("CREATE TABLE IF NOT EXISTS cupons ("
-                + "coo    NUMERIC(6) PRIMARY KEY,"
-                + "data   DATE,"
-                + "cnpj   VARCHAR(18),"
-                + "valor  NUMERIC(11,2),"
+  client.query("CREATE TABLE IF NOT EXISTS chaves ("
+                + "valor  VARCHAR(255) PRIMARY KEY,"
                 + "estado NUMERIC(1) DEFAULT 0"
               + ");");
 }
 
-//Insert new Cupom on Table
-var _insertCupom = function(cupom){
+//Insert new Chave on Table
+var _insertChave = function(chave){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
@@ -34,8 +31,8 @@ var _insertCupom = function(cupom){
   //Create Table if it does not exist
   _createTable(client);
 
-  //PostgreSQL Query to Create a new cupom
-  client.query("INSERT INTO cupons (coo, data, cnpj, valor) values ($1, $2, $3, $4)", [cupom.coo, cupom.data, cupom.cnpj, cupom.valor]).then(function(){
+  //PostgreSQL Query to Create a new chave
+  client.query("INSERT INTO chaves (valor) values ($1)", [chave]).then(function(){
 
     //End Connection
     client.end();
@@ -53,8 +50,8 @@ var _insertCupom = function(cupom){
   return defer.promise;
 }
 
-//Select ALL cupons
-var _selectCupom = function(){
+//Select ALL chaves
+var _selectChave = function(){
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
@@ -65,10 +62,10 @@ var _selectCupom = function(){
   //Creates Promise
   var defer = Promise.defer();
 
-  //PostgreSQL Query to Get a ll cupons
-  var query = client.query("SELECT * from cupons");
+  //PostgreSQL Query to Get all chaves
+  var query = client.query("SELECT * from chaves");
 
-  //Add Each Cupom
+  //Add Each Chave
   query.on("row", function (row, result) {
 
     result.addRow(row);
@@ -80,7 +77,7 @@ var _selectCupom = function(){
     //End Connection
     client.end();
 
-    //Execute after Query Ends (Returning Cupons)
+    //Execute after Query Ends (Returning Chaves)
     defer.resolve(result.rows);
   });
 
@@ -88,8 +85,8 @@ var _selectCupom = function(){
   return defer.promise;
 }
 
-//Delete Specific Cupom
-var _deleteCupom = function(cupom){
+//Delete Specific Chave
+var _deleteChave = function(chave){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
@@ -98,8 +95,8 @@ var _deleteCupom = function(cupom){
   //Creates Promise
   var defer = Promise.defer();
 
-  //PostgreSQL Query to Delete a specific cupom
-  client.query("DELETE FROM cupons WHERE coo=$1",[cupom.coo]).then(function(){
+  //PostgreSQL Query to Delete a specific chave
+  client.query("DELETE FROM chaves WHERE valor=$1",[chave]).then(function(){
 
     //End Connection
     client.end();
@@ -117,7 +114,7 @@ var _deleteCupom = function(cupom){
   return defer.promise;
 }
 
-//Delete All Cupom
+//Delete All Chave
 var _deleteAll = function(){
 
   //Connection
@@ -127,10 +124,10 @@ var _deleteAll = function(){
   //Creates Promise
   var defer = Promise.defer();
 
-  //PostgreSQL Query to Drop Cupom Table
-  client.query("DROP TABLE cupons").then(function(){
+  //PostgreSQL Query to Drop Chave Table
+  client.query("DROP TABLE chaves").then(function(){
 
-    //Creata Table Cupom
+    //Creata Table Chave
     _createTable(client);
 
     //Executes after Query End
@@ -148,8 +145,8 @@ var _deleteAll = function(){
 
 //Functions to be Exported
 module.exports = {
-  insertCupom: _insertCupom,
-  selectCupom: _selectCupom,
-  deleteCupom: _deleteCupom,
+  insertChave: _insertChave,
+  selectChave: _selectChave,
+  deleteChave: _deleteChave,
   deleteAll:   _deleteAll
 }

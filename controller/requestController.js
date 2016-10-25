@@ -5,8 +5,10 @@
 var express = require('express');
 
 //Require created Models
-var Request   = require('../model/request');
-var Cupom     = require('../model/cupom')
+var Request = require('../model/request');
+var Cupom   = require('../model/cupom');
+var Chave   = require('../model/chave');
+
 //Creates Routes
 var router  = express.Router();
 
@@ -16,7 +18,7 @@ router.route('/request')
   //GET (Select) all Requests
   .get(function(req, res){
 
-    Request.selectRequest(function(requests){
+    Request.selectRequest().then(function(requests){
       res.json(requests);
     });
   });
@@ -24,15 +26,16 @@ router.route('/request')
 //Methods For Route /delete
 router.route('/delete')
 
-  //DELETE All Requests
+  //DELETE EVERYTHING
   .get(function(req, res){
 
-    //Drop and creates a new Request Table
-    Request.deleteAll(function(result){
-      Cupom.deleteAll(function(result){
+    //Drop and creates Tables
+    Request.deleteAll()
+      .then(Cupom.deleteAll())
+      .then(Chave.deleteAll())
+      .then(function(result){
         res.json(result);
       });
-    });
   });
 
 module.exports = router;

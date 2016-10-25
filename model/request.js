@@ -12,7 +12,7 @@ var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2
 var _createTable = function(client){
   //Table Script
   client.query("CREATE TABLE IF NOT EXISTS requests ("
-                + "number   NUMERIC(5) PRIMARY KEY,"
+                + "number   NUMERIC(10) PRIMARY KEY,"
                 + "date     VARCHAR(255),"
                 + "ip       VARCHAR(255),"
                 + "protocol VARCHAR(255),"
@@ -25,9 +25,11 @@ var _createTable = function(client){
 }
 
 //Get the info of the Request
-var _requestInfo = function(req, client, next){
+var _requestInfo = function(req, client){
 
-  //PostgreSQL Query to Get the largest reuqest number
+  var defer = Promise.defer();
+
+  //PostgreSQL Query to Get the largest request number
   var query = client.query("SELECT MAX(number) FROM requests");
 
   //Add Each Request
@@ -43,6 +45,8 @@ var _requestInfo = function(req, client, next){
     var number = (result.rows[0].max || 0);
     number++;
 
+    console.log(number);
+
     //Request Information
     var request = {
       number:   number,
@@ -55,13 +59,17 @@ var _requestInfo = function(req, client, next){
       url:      req.url,
       body:     JSON.stringify(req.body)
     };
+
     //Execute after Query End (Return a new Request to be Inserted)
-    next(request);
+    defer.resolve(request);
   });
+
+  //Return the promise
+  return defer.promise;
 }
 
 //Insert new Request on Table
-var _insertRequest = function(req, next){
+var _insertRequest = function(req){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
@@ -70,8 +78,11 @@ var _insertRequest = function(req, next){
   //Create Table if it does not exist
   _createTable(client);
 
+  //Creates Promise
+  var defer = Promise.defer();
+
   //Filter Request Information
-  _requestInfo(req, client, function(r){
+  _requestInfo(req, client).then(function(r){
 
     //PostgreSQL Query to Create a new request
     client.query("INSERT INTO requests (number, date, ip, protocol, method, agent, host, url, body) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [r.number, r.date, r.ip, r.protocol, r.method, r.agent, r.host, r.url, r.body]).then(function(){
@@ -79,23 +90,28 @@ var _insertRequest = function(req, next){
       //End Connection
       client.end();
 
-      //Execute after Query Ends
-      next("Ok");
+      //Resolves Promise after Query Ends
+      defer.resolve("OK");
 
     }, function(err){
 
-      //Execute after Error
-      next(err);
+      //Rejects Promise
+      defer.reject(err);
     });
-
   });
+
+  //Return the promise
+  return defer.promise;
 }
 
 //Select ALL Requests
-var _selectRequest = function(next){
+var _selectRequest = function(){
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
+
+  //Creates Promise
+  var defer = Promise.defer();
 
   //PostgreSQL Query to get all requests
   var query = client.query("SELECT * from requests");
@@ -112,17 +128,23 @@ var _selectRequest = function(next){
     //End Connection
     client.end();
 
-    //Execute after Query End (Returning Requests)
-    next(result.rows);
+    //Execute after Query Ends (Returning Requests)
+    defer.resolve(result.rows);
   });
+
+  //Return the promise
+  return defer.promise;
 }
 
 //Delete Specific Request
-var _deleteRequest = function(request, next){
+var _deleteRequest = function(request){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
+
+  //Creates Promise
+  var defer = Promise.defer();
 
   //PostgreSQL Query to delete a specific requests
   client.query("DELETE FROM requests WHERE number=$1",[request.number]).then(function(){
@@ -130,21 +152,28 @@ var _deleteRequest = function(request, next){
     //End Connection
     client.end();
 
-    //Execute after Query End
-    next("Ok");
+    //Resolves Promise after Query End
+    defer.resolve("OK");
 
   }, function(err){
-    //Execute after Error
-    next(err);
+
+    //Rejects Promise
+    defer.reject(err);
   });
+
+  //Return the promise
+  return defer.promise;
 }
 
 //Delete All Requests
-var _deleteAll = function(next){
+var _deleteAll = function(){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
+
+  //Creates Promise
+  var defer = Promise.defer();
 
   //PostgreSQL Query to Drop Request Table
   client.query("DROP TABLE requests").then(function(){
@@ -152,14 +181,19 @@ var _deleteAll = function(next){
     //Creata Table Request
     _createTable(client);
 
-    //Execute after Query End
-    next("Ok");
+    //Executes after Query End
+    defer.resolve("OK");
 
   }, function(err){
-    //Execute after Error
-    next(err)
+
+    //Rejects Promise
+    defer.reject(err);
   });
+
+  //Return the promise
+  return defer.promise;
 }
+
 //Functions to be Exported
 module.exports = {
   insertRequest: _insertRequest,
