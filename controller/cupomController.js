@@ -24,7 +24,14 @@ router.route('/cupom')
 
     //Get Cupons
     Cupom.selectCupom().then(function(cupom){
+
       res.json(cupom);
+      //Success in GET
+
+    }).catch(err =>{
+
+      //Error in GET
+      res.json(err);
     });
   })
 
@@ -36,7 +43,14 @@ router.route('/cupom')
 
     //Creates a  Cupom
     Cupom.insertCupom(req.body).then(function(result){
+
+      //Success in POST
       res.json(result);
+
+    }).catch(err =>{
+
+      //Error in POST
+      res.json(err);
     });
   })
 
@@ -48,7 +62,14 @@ router.route('/cupom')
 
     //Deletes a  Cupom
     Cupom.deleteCupom(req.body).then(function(result){
+
+      //Success in DELETE
       res.json(result)
+
+    }).catch(err =>{
+
+      //Error in DELETE
+      res.json(err);
     });
   });
 
@@ -62,9 +83,15 @@ router.route('/chave')
 
     //Creates a Chave
     Chave.selectChave().then(function(chave){
-      res.json(chave);
-    });
 
+      //Success in GET
+      res.json(chave);
+
+    }).catch(err =>{
+
+      //Error in GET
+      res.json(err);
+    });;
   })
 
   //POST (Insert) new Chave
@@ -75,8 +102,15 @@ router.route('/chave')
 
     //Creates a  Chave
     Cupom.insertCupom(req.body).then(function(result){
+
+      //Success in POST
       res.json(result);
-    });
+
+    }).catch(err =>{
+
+      //Error in POST
+      res.json(err);
+    });;
   })
 
   //DELETE (Delete) Specific Chave
@@ -87,8 +121,15 @@ router.route('/chave')
 
     //Deletes a Chave
     Cupom.deleteCupom(req.body).then(function(result){
-      res.json(result)
-    });
+
+      //Success in DELETE
+      res.json(result);
+
+    }).catch(err =>{
+
+      //Error in DELETE
+      res.json(err);
+    });;
   });
 
 //Exporting Routes

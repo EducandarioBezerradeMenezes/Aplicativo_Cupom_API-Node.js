@@ -19,8 +19,15 @@ router.route('/request')
   .get(function(req, res){
 
     Request.selectRequest().then(function(requests){
+
+      //Success in GET
       res.json(requests);
-    });
+
+    }).catch(err =>{
+
+      //Error in GET
+      res.json(err);
+    });;
   });
 
 //Methods For Route /delete
@@ -34,7 +41,13 @@ router.route('/delete')
       .then(Cupom.deleteAll())
       .then(Chave.deleteAll())
       .then(function(result){
+
+        //Sucess in DELETE ALL
         res.json(result);
+      }).catch(err =>{
+
+        //Error in DELETE ALL
+        res.json(err);
       });
   });
 
