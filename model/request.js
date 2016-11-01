@@ -45,8 +45,6 @@ var _requestInfo = function(req, client){
     var number = (result.rows[0].max || 0);
     number++;
 
-    console.log(number);
-
     //Request Information
     var request = {
       number:   number,

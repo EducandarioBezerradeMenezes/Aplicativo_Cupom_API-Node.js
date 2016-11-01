@@ -32,7 +32,7 @@ var _insertChave = function(chave){
   _createTable(client);
 
   //PostgreSQL Query to Create a new chave
-  client.query("INSERT INTO chaves (valor) values ($1)", [chave]).then(function(){
+  client.query("INSERT INTO chaves (valor) values ($1)", [chave.valor]).then(function(){
 
     //End Connection
     client.end();

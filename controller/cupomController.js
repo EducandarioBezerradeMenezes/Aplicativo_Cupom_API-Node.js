@@ -101,7 +101,7 @@ router.route('/chave')
     Request.insertRequest(req);
 
     //Creates a  Chave
-    Cupom.insertCupom(req.body).then(function(result){
+    Chave.insertChave(req.body).then(function(result){
 
       //Success in POST
       res.json(result);
@@ -120,7 +120,7 @@ router.route('/chave')
     Request.insertRequest(req);
 
     //Deletes a Chave
-    Cupom.deleteCupom(req.body).then(function(result){
+    Chave.deleteChave(req.body).then(function(result){
 
       //Success in DELETE
       res.json(result);
