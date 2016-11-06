@@ -25,8 +25,8 @@ router.route('/cupom')
     //Get Cupons
     Cupom.selectCupom().then(function(cupom){
 
-      res.json(cupom);
       //Success in GET
+      res.json(cupom);
 
     }).catch(err =>{
 
