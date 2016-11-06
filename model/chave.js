@@ -14,6 +14,7 @@ var _createTable = function(client){
   //Table Script
   client.query("CREATE TABLE IF NOT EXISTS chaves ("
                 + "valor  VARCHAR(255) PRIMARY KEY,"
+                + "data   DATE DEFAULT CURRENT_DATE,"
                 + "estado NUMERIC(1) DEFAULT 0"
               + ");");
 }
