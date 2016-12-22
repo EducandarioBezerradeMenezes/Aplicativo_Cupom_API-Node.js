@@ -6,7 +6,8 @@ var pg = require('pg');
 
 //Connect to PostgreSQL
 pg.defaults.ssl = true;
-var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
+// var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
+const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
 
 //Create Request Table
 var _createTable = function(client){
