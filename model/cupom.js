@@ -30,28 +30,25 @@ var _insertCupom = function(cupom){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //Create Table if it does not exist
+    _createTable(client);
 
-  //Create Table if it does not exist
-  _createTable(client);
+    //PostgreSQL Query to Create a new cupom
+    client.query("INSERT INTO cupons (coo, data, cnpj, valor) values ($1, $2, $3, $4)", [cupom.coo, cupom.data, cupom.cnpj, cupom.valor]).then(function(){
 
-  //PostgreSQL Query to Create a new cupom
-  client.query("INSERT INTO cupons (coo, data, cnpj, valor) values ($1, $2, $3, $4)", [cupom.coo, cupom.data, cupom.cnpj, cupom.valor]).then(function(){
+      //End Connection
+      client.end();
 
-    //End Connection
-    client.end();
+      //Resolves Promise after Query Ends
+      resolve("OK");
 
-    //Resolves Promise after Query Ends
-    defer.resolve("OK");
+    }, function(err){
 
-  }, function(err){
-
-    //Rejects Promise
-    defer.reject(err);
+      //Rejects Promise
+      reject(err);
+    });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Select ALL cupons
@@ -64,29 +61,26 @@ var _selectCupom = function(){
   _createTable(client);
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //PostgreSQL Query to Get a ll cupons
+    var query = client.query("SELECT * from cupons");
 
-  //PostgreSQL Query to Get a ll cupons
-  var query = client.query("SELECT * from cupons");
+    //Add Each Cupom
+    query.on("row", function (row, result) {
 
-  //Add Each Cupom
-  query.on("row", function (row, result) {
+      result.addRow(row);
+    });
 
-    result.addRow(row);
+    //Query End
+    query.on("end", function (result) {
+
+      //End Connection
+      client.end();
+
+      //Execute after Query Ends (Returning Cupons)
+      resolve(result.rows);
+    });
   });
-
-  //Query End
-  query.on("end", function (result) {
-
-    //End Connection
-    client.end();
-
-    //Execute after Query Ends (Returning Cupons)
-    defer.resolve(result.rows);
-  });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Delete Specific Cupom
@@ -97,25 +91,22 @@ var _deleteCupom = function(cupom){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //PostgreSQL Query to Delete a specific cupom
+    client.query("DELETE FROM cupons WHERE coo=$1",[cupom.coo]).then(function(){
 
-  //PostgreSQL Query to Delete a specific cupom
-  client.query("DELETE FROM cupons WHERE coo=$1",[cupom.coo]).then(function(){
+      //End Connection
+      client.end();
 
-    //End Connection
-    client.end();
+      //Resolves Promise after Query End
+      resolve("OK");
 
-    //Resolves Promise after Query End
-    defer.resolve("OK");
+    }, function(err){
 
-  }, function(err){
-
-    //Rejects Promise
-    defer.reject(err);
+      //Rejects Promise
+      reject(err);
+    });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Delete All Cupom
@@ -126,25 +117,23 @@ var _deleteAll = function(){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
 
-  //PostgreSQL Query to Drop Cupom Table
-  client.query("DROP TABLE cupons").then(function(){
+      //PostgreSQL Query to Drop Cupom Table
+      client.query("DROP TABLE cupons").then(function(){
 
-    //Creata Table Cupom
-    _createTable(client);
+        //Creata Table Cupom
+        _createTable(client);
 
-    //Executes after Query End
-    defer.resolve("OK");
+        //Executes after Query End
+        resolve("OK");
 
-  }, function(err){
+      }, function(err){
 
-    //Rejects Promise
-    defer.reject(err);
+        //Rejects Promise
+        reject(err);
+      });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Functions to be Exported

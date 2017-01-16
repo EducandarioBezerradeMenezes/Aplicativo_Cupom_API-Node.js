@@ -28,43 +28,40 @@ var _createTable = function(client){
 //Get the info of the Request
 var _requestInfo = function(req, client){
 
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //PostgreSQL Query to Get the largest request number
+    var query = client.query("SELECT MAX(number) FROM requests");
 
-  //PostgreSQL Query to Get the largest request number
-  var query = client.query("SELECT MAX(number) FROM requests");
+    //Add Each Request
+    query.on("row", function (row, result) {
 
-  //Add Each Request
-  query.on("row", function (row, result) {
+      result.addRow(row);
+    });
 
-    result.addRow(row);
+    //Query End
+    query.on("end", function (result) {
+
+      //Creates a number for the request
+      var number = (result.rows[0].max || 0);
+      number++;
+
+      //Request Information
+      var request = {
+        number:   number,
+        date:     new Date().toString(),
+        ip:       req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        protocol: req.protocol,
+        method:   req.method,
+        agent:    req.headers['user-agent'],
+        host:     req.headers.host,
+        url:      req.url,
+        body:     JSON.stringify(req.body)
+      };
+
+      //Execute after Query End (Return a new Request to be Inserted)
+      resolve(request);
+    });
   });
-
-  //Query End
-  query.on("end", function (result) {
-
-    //Creates a number for the request
-    var number = (result.rows[0].max || 0);
-    number++;
-
-    //Request Information
-    var request = {
-      number:   number,
-      date:     new Date().toString(),
-      ip:       req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-      protocol: req.protocol,
-      method:   req.method,
-      agent:    req.headers['user-agent'],
-      host:     req.headers.host,
-      url:      req.url,
-      body:     JSON.stringify(req.body)
-    };
-
-    //Execute after Query End (Return a new Request to be Inserted)
-    defer.resolve(request);
-  });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Insert new Request on Table
@@ -78,29 +75,26 @@ var _insertRequest = function(req){
   _createTable(client);
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //Filter Request Information
+    _requestInfo(req, client).then(function(r){
 
-  //Filter Request Information
-  _requestInfo(req, client).then(function(r){
+      //PostgreSQL Query to Create a new request
+      client.query("INSERT INTO requests (number, date, ip, protocol, method, agent, host, url, body) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [r.number, r.date, r.ip, r.protocol, r.method, r.agent, r.host, r.url, r.body]).then(function(){
 
-    //PostgreSQL Query to Create a new request
-    client.query("INSERT INTO requests (number, date, ip, protocol, method, agent, host, url, body) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [r.number, r.date, r.ip, r.protocol, r.method, r.agent, r.host, r.url, r.body]).then(function(){
+        //End Connection
+        client.end();
 
-      //End Connection
-      client.end();
+        //Resolves Promise after Query Ends
+        resolve("OK");
 
-      //Resolves Promise after Query Ends
-      defer.resolve("OK");
+      }, function(err){
 
-    }, function(err){
-
-      //Rejects Promise
-      defer.reject(err);
+        //Rejects Promise
+        reject(err);
+      });
     });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Select ALL Requests
@@ -110,29 +104,26 @@ var _selectRequest = function(){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //PostgreSQL Query to get all requests
+    var query = client.query("SELECT * from requests");
 
-  //PostgreSQL Query to get all requests
-  var query = client.query("SELECT * from requests");
+    //Add Each Request
+    query.on("row", function (row, result) {
 
-  //Add Each Request
-  query.on("row", function (row, result) {
+      result.addRow(row);
+    });
 
-    result.addRow(row);
+    //Query End
+    query.on("end", function (result) {
+
+      //End Connection
+      client.end();
+
+      //Execute after Query Ends (Returning Requests)
+      resolve(result.rows);
+    });
   });
-
-  //Query End
-  query.on("end", function (result) {
-
-    //End Connection
-    client.end();
-
-    //Execute after Query Ends (Returning Requests)
-    defer.resolve(result.rows);
-  });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Delete Specific Request
@@ -143,25 +134,22 @@ var _deleteRequest = function(request){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //PostgreSQL Query to delete a specific requests
+    client.query("DELETE FROM requests WHERE number=$1",[request.number]).then(function(){
 
-  //PostgreSQL Query to delete a specific requests
-  client.query("DELETE FROM requests WHERE number=$1",[request.number]).then(function(){
+      //End Connection
+      client.end();
 
-    //End Connection
-    client.end();
+      //Resolves Promise after Query End
+      resolve("OK");
 
-    //Resolves Promise after Query End
-    defer.resolve("OK");
+    }, function(err){
 
-  }, function(err){
-
-    //Rejects Promise
-    defer.reject(err);
+      //Rejects Promise
+      reject(err);
+    });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Delete All Requests
@@ -172,25 +160,22 @@ var _deleteAll = function(){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //PostgreSQL Query to Drop Request Table
+    client.query("DROP TABLE requests").then(function(){
 
-  //PostgreSQL Query to Drop Request Table
-  client.query("DROP TABLE requests").then(function(){
+      //Creata Table Request
+      _createTable(client);
 
-    //Creata Table Request
-    _createTable(client);
+      //Executes after Query End
+      resolve("OK");
 
-    //Executes after Query End
-    defer.resolve("OK");
+    }, function(err){
 
-  }, function(err){
-
-    //Rejects Promise
-    defer.reject(err);
+      //Rejects Promise
+      reject(err);
+    });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Functions to be Exported

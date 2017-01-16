@@ -28,28 +28,25 @@ var _insertChave = function(chave){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //Create Table if it does not exist
+    _createTable(client);
 
-  //Create Table if it does not exist
-  _createTable(client);
+    //PostgreSQL Query to Create a new chave
+    client.query("INSERT INTO chaves (valor) values ($1)", [chave.valor]).then(function(){
 
-  //PostgreSQL Query to Create a new chave
-  client.query("INSERT INTO chaves (valor) values ($1)", [chave.valor]).then(function(){
+      //End Connection
+      client.end();
 
-    //End Connection
-    client.end();
+      //Resolves Promise after Query Ends
+      resolve("OK");
 
-    //Resolves Promise after Query Ends
-    defer.resolve("OK");
+    }, function(err){
 
-  }, function(err){
-
-    //Rejects Promise
-    defer.reject(err);
+      //Rejects Promise
+      reject(err);
+    });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Select ALL chaves
@@ -62,29 +59,26 @@ var _selectChave = function(){
   _createTable(client);
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) => {
+    //PostgreSQL Query to Get all chaves
+    var query = client.query("SELECT * from chaves");
 
-  //PostgreSQL Query to Get all chaves
-  var query = client.query("SELECT * from chaves");
+    //Add Each Chave
+    query.on("row", function (row, result) {
 
-  //Add Each Chave
-  query.on("row", function (row, result) {
+      result.addRow(row);
+    });
 
-    result.addRow(row);
+    //Query End
+    query.on("end", function (result) {
+
+      //End Connection
+      client.end();
+
+      //Execute after Query Ends (Returning Chaves)
+      resolve(result.rows);
+    });
   });
-
-  //Query End
-  query.on("end", function (result) {
-
-    //End Connection
-    client.end();
-
-    //Execute after Query Ends (Returning Chaves)
-    defer.resolve(result.rows);
-  });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Delete Specific Chave
@@ -95,25 +89,22 @@ var _deleteChave = function(chave){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject) =>{
+    //PostgreSQL Query to Delete a specific chave
+    client.query("DELETE FROM chaves WHERE valor=$1",[chave]).then(function(){
 
-  //PostgreSQL Query to Delete a specific chave
-  client.query("DELETE FROM chaves WHERE valor=$1",[chave]).then(function(){
+        //End Connection
+        client.end();
 
-    //End Connection
-    client.end();
+        //Resolves Promise after Query End
+        resolve("OK");
 
-    //Resolves Promise after Query End
-    defer.resolve("OK");
+      }, function(err){
 
-  }, function(err){
-
-    //Rejects Promise
-    defer.reject(err);
+        //Rejects Promise
+        reject(err);
+      });
   });
-
-  //Return the promise
-  return defer.promise;
 }
 
 //Delete All Chave
@@ -124,25 +115,24 @@ var _deleteAll = function(){
   client.connect();
 
   //Creates Promise
-  var defer = Promise.defer();
+  return new Promise((resolve, reject)=> {
 
-  //PostgreSQL Query to Drop Chave Table
-  client.query("DROP TABLE chaves").then(function(){
+      //PostgreSQL Query to Drop Chave Table
+      client.query("DROP TABLE chaves").then(function(){
 
-    //Creata Table Chave
-    _createTable(client);
+        //Creata Table Chave
+        _createTable(client);
 
-    //Executes after Query End
-    defer.resolve("OK");
+        //Executes after Query End
+        resolve("OK");
 
-  }, function(err){
+      }, function(err){
 
-    //Rejects Promise
-    defer.reject(err);
+        //Rejects Promise
+        reject(err);
+      });
   });
 
-  //Return the promise
-  return defer.promise;
 }
 
 //Functions to be Exported
