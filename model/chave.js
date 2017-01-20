@@ -6,17 +6,20 @@ var pg = require('pg');
 
 //Connect to PostgreSQL
 pg.defaults.ssl = true;
-// var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
-const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
+var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
+// const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
 
 //Create Chave Table
 var _createTable = function(client){
 
-  //Table Script
+  // Desculpe-me Programadores
+  client.query("CREATE TYPE ESTADO AS ENUM('nao cadastrado', 'cadastrado', 'cadastro erro', 'captcha erro')").catch(() => {});
+
   client.query("CREATE TABLE IF NOT EXISTS chaves ("
-                + "valor  VARCHAR(50) PRIMARY KEY,"
-                + "data   DATE DEFAULT CURRENT_DATE,"
-                + "estado NUMERIC(1) DEFAULT 0"
+                + "id        SERIAL PRIMARY KEY,"
+                + "valor     VARCHAR(100),"
+                + "criado_em DATE DEFAULT CURRENT_DATE,"
+                + "estado    ESTADO DEFAULT 'nao cadastrado'"
               + ");");
 }
 

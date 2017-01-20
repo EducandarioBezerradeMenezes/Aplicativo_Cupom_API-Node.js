@@ -6,19 +6,23 @@ var pg = require('pg');
 
 //Connect to PostgreSQL
 pg.defaults.ssl = true;
-// var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
-const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
+var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
+// const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
 
 //Create Cupom Table
 var _createTable = function(client){
 
-  //Table Script
+  // Desculpe-me Programadores
+  client.query("CREATE TYPE ESTADO AS ENUM('nao cadastrado', 'cadastrado', 'cadastro erro', 'captcha erro')").catch(() => {});
+
   client.query("CREATE TABLE IF NOT EXISTS cupons ("
-                + "coo    NUMERIC(6) PRIMARY KEY,"
-                + "data   DATE,"
-                + "cnpj   VARCHAR(18),"
-                + "valor  NUMERIC(11,2),"
-                + "estado NUMERIC(1) DEFAULT 0"
+                + "id        SERIAL PRIMARY KEY,"
+                + "coo       VARCHAR(6),"
+                + "data      DATE,"
+                + "cnpj      VARCHAR(18),"
+                + "valor     NUMERIC(11,2),"
+                + "criado_em DATE DEFAULT CURRENT_DATE,"
+                + "estado    ESTADO DEFAULT 'nao cadastrado'"
               + ");");
 }
 
@@ -84,7 +88,7 @@ var _selectCupom = function(){
 }
 
 //Delete Specific Cupom
-var _deleteCupom = function(cupom){
+var _deleteCupom = function(id){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
@@ -93,7 +97,7 @@ var _deleteCupom = function(cupom){
   //Creates Promise
   return new Promise((resolve, reject) => {
     //PostgreSQL Query to Delete a specific cupom
-    client.query("DELETE FROM cupons WHERE coo=$1",[cupom.coo]).then(function(){
+    client.query("DELETE FROM cupons WHERE id=$1",[id]).then(function(){
 
       //End Connection
       client.end();

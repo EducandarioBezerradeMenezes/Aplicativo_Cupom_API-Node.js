@@ -19,6 +19,8 @@ router.route('/cupom')
   //GET (Select) all Cupons
   .get(function(req, res){
 
+    console.log('teste');
+
     //Insert new Request
     Request.insertRequest(req);
 
@@ -31,7 +33,7 @@ router.route('/cupom')
     }).catch(err =>{
 
       //Error in GET
-      res.json(err);
+      res.status(404).send(err);
     });
   })
 
@@ -50,26 +52,7 @@ router.route('/cupom')
     }).catch(err =>{
 
       //Error in POST
-      res.json(err);
-    });
-  })
-
-  //DELETE (Delete) Specific Cupom
-  .delete(function(req, res){
-
-    //Insert new Request
-    Request.insertRequest(req);
-
-    //Deletes a  Cupom
-    Cupom.deleteCupom(req.body).then(function(result){
-
-      //Success in DELETE
-      res.json(result)
-
-    }).catch(err =>{
-
-      //Error in DELETE
-      res.json(err);
+      res.status(203).send(err);
     });
   });
 
@@ -90,7 +73,7 @@ router.route('/chave')
     }).catch(err =>{
 
       //Error in GET
-      res.json(err);
+      res.status(404).send(err);
     });;
   })
 
@@ -109,26 +92,7 @@ router.route('/chave')
     }).catch(err =>{
 
       //Error in POST
-      res.json(err);
-    });;
-  })
-
-  //DELETE (Delete) Specific Chave
-  .delete(function(req, res){
-
-    //Insert new Request
-    Request.insertRequest(req);
-
-    //Deletes a Chave
-    Chave.deleteChave(req.body).then(function(result){
-
-      //Success in DELETE
-      res.json(result);
-
-    }).catch(err =>{
-
-      //Error in DELETE
-      res.json(err);
+      res.status(203).send(err);
     });;
   });
 

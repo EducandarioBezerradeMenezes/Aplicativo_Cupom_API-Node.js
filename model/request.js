@@ -6,22 +6,22 @@ var pg = require('pg');
 
 //Connect to PostgreSQL
 pg.defaults.ssl = true;
-// var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
-const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
+var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
+// const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
 
 //Create Request Table
 var _createTable = function(client){
   //Table Script
   client.query("CREATE TABLE IF NOT EXISTS requests ("
-                + "number   NUMERIC(10) PRIMARY KEY,"
-                + "date     VARCHAR(255),"
-                + "ip       VARCHAR(255),"
-                + "protocol VARCHAR(255),"
-                + "method   VARCHAR(255),"
-                + "agent    VARCHAR(255),"
-                + "host     VARCHAR(255),"
-                + "url      VARCHAR(255),"
-                + "body     VARCHAR(255)"
+                + "id         SERIAL PRIMARY KEY,"
+                + "ip         VARCHAR(100),"
+                + "protocol   VARCHAR(10),"
+                + "method     VARCHAR(10),"
+                + "agent      TEXT,"
+                + "host       VARCHAR(100),"
+                + "url        VARCHAR(100),"
+                + "body       TEXT,"
+                + "created_at DATE DEFAULT CURRENT_DATE"
               + ");");
 }
 
@@ -29,38 +29,20 @@ var _createTable = function(client){
 var _requestInfo = function(req, client){
 
   return new Promise((resolve, reject) => {
-    //PostgreSQL Query to Get the largest request number
-    var query = client.query("SELECT MAX(number) FROM requests");
 
-    //Add Each Request
-    query.on("row", function (row, result) {
+    //Request Information
+    var request = {
+      date:     new Date(),
+      ip:       req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      protocol: req.protocol,
+      method:   req.method,
+      agent:    req.headers['user-agent'],
+      host:     req.headers.host,
+      url:      req.url,
+      body:     JSON.stringify(req.body)
+    };
 
-      result.addRow(row);
-    });
-
-    //Query End
-    query.on("end", function (result) {
-
-      //Creates a number for the request
-      var number = (result.rows[0].max || 0);
-      number++;
-
-      //Request Information
-      var request = {
-        number:   number,
-        date:     new Date().toString(),
-        ip:       req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-        protocol: req.protocol,
-        method:   req.method,
-        agent:    req.headers['user-agent'],
-        host:     req.headers.host,
-        url:      req.url,
-        body:     JSON.stringify(req.body)
-      };
-
-      //Execute after Query End (Return a new Request to be Inserted)
-      resolve(request);
-    });
+    resolve(request);
   });
 }
 
@@ -80,13 +62,13 @@ var _insertRequest = function(req){
     _requestInfo(req, client).then(function(r){
 
       //PostgreSQL Query to Create a new request
-      client.query("INSERT INTO requests (number, date, ip, protocol, method, agent, host, url, body) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [r.number, r.date, r.ip, r.protocol, r.method, r.agent, r.host, r.url, r.body]).then(function(){
+      client.query("INSERT INTO requests (created_at, ip, protocol, method, agent, host, url, body) values ($1, $2, $3, $4, $5, $6, $7, $8)", [r.date, r.ip, r.protocol, r.method, r.agent, r.host, r.url, r.body]).then(function(){
 
         //End Connection
         client.end();
 
         //Resolves Promise after Query Ends
-        resolve("OK");
+        resolve(r);
 
       }, function(err){
 
@@ -127,7 +109,7 @@ var _selectRequest = function(){
 }
 
 //Delete Specific Request
-var _deleteRequest = function(request){
+var _deleteRequest = function(id){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
@@ -136,7 +118,7 @@ var _deleteRequest = function(request){
   //Creates Promise
   return new Promise((resolve, reject) => {
     //PostgreSQL Query to delete a specific requests
-    client.query("DELETE FROM requests WHERE number=$1",[request.number]).then(function(){
+    client.query("DELETE FROM requests WHERE id=$1",[id]).then(function(){
 
       //End Connection
       client.end();

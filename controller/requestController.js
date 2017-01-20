@@ -26,29 +26,8 @@ router.route('/request')
     }).catch(err =>{
 
       //Error in GET
-      res.json(err);
+      res.status(500).send(err);
     });;
-  });
-
-//Methods For Route /delete
-router.route('/delete')
-
-  //DELETE EVERYTHING
-  .get(function(req, res){
-
-    //Drop and creates Tables
-    Request.deleteAll()
-      .then(Cupom.deleteAll())
-      .then(Chave.deleteAll())
-      .then(function(result){
-
-        //Sucess in DELETE ALL
-        res.json(result);
-      }).catch(err =>{
-
-        //Error in DELETE ALL
-        res.json(err);
-      });
   });
 
 module.exports = router;
