@@ -6,8 +6,8 @@ var pg = require('pg');
 
 //Connect to PostgreSQL
 pg.defaults.ssl = true;
-var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
-// const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
+//var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
+const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
 
 //Create Cupom Table
 var _createTable = function(client){
@@ -37,6 +37,9 @@ var _insertCupom = function(cupom){
   return new Promise((resolve, reject) => {
     //Create Table if it does not exist
     _createTable(client);
+
+    const data = cupom.data.split('/');
+    cupom.data = new Date(data[2], data[1], data[0]);
 
     //PostgreSQL Query to Create a new cupom
     client.query("INSERT INTO cupons (coo, data, cnpj, valor) values ($1, $2, $3, $4)", [cupom.coo, cupom.data, cupom.cnpj, cupom.valor]).then(function(){

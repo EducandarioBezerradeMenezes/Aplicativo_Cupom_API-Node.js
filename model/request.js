@@ -6,8 +6,8 @@ var pg = require('pg');
 
 //Connect to PostgreSQL
 pg.defaults.ssl = true;
-var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
-// const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
+//var connectionString = "postgres://palffuboakjyaz:FMMpU1-5Ot5STXlJvbrgKaIyt6@ec2-54-163-248-218.compute-1.amazonaws.com:5432/ddorvpnoikl99p";
+const connectionString = "postgres://postgres:mateus123mudar@localhost:5432/ebm_notas";
 
 //Create Request Table
 var _createTable = function(client){
@@ -45,14 +45,16 @@ var _requestInfo = function(req, client){
     resolve(request);
   });
 }
-
+const data = cupom.data.split('/');
+    cupom.data = new Date(data[2], data[1], data[0]);
 //Insert new Request on Table
 var _insertRequest = function(req){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
-
+const data = cupom.data.split('/');
+    cupom.data = new Date(data[2], data[1], data[0]);
   //Create Table if it does not exist
   _createTable(client);
 
