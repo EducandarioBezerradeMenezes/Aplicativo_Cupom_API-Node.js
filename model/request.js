@@ -45,16 +45,14 @@ var _requestInfo = function(req, client){
     resolve(request);
   });
 }
-const data = cupom.data.split('/');
-    cupom.data = new Date(data[2], data[1], data[0]);
+
 //Insert new Request on Table
 var _insertRequest = function(req){
 
   //Connection
   var client = new pg.Client(process.env.DATABASE_URL || connectionString);
   client.connect();
-const data = cupom.data.split('/');
-    cupom.data = new Date(data[2], data[1], data[0]);
+
   //Create Table if it does not exist
   _createTable(client);
 
